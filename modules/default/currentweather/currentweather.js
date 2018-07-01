@@ -424,21 +424,35 @@ Module.register("currentweather",{
 
 		} else if (tempInF > 80 && this.humidity > 40){
 			// heat index
-			var Hindex = -42.379 + 2.04901523*tempInF + 10.14333127*this.humidity
-				- 0.22475541*tempInF*this.humidity - 6.83783*Math.pow(10,-3)*tempInF*tempInF
-				- 5.481717*Math.pow(10,-2)*this.humidity*this.humidity
-				+ 1.22874*Math.pow(10,-3)*tempInF*tempInF*this.humidity
-				+ 8.5282*Math.pow(10,-4)*tempInF*this.humidity*this.humidity
-				- 1.99*Math.pow(10,-6)*tempInF*tempInF*this.humidity*this.humidity;
+			var percentHum = this.humidity;
+			
+			//Heat index formula constants
+			var c1 = -42.379;
+			var c2 = 2.04901523;
+			var c3 = 10.14333127;
+			var c4 = -0.22475541;
+			var c5 = -0.00683783;
+			var c6 = -0.05481717;
+			var c7 = 0.00122874;
+			var c8 = 0.00085282;
+			var c9 = -0.00000199;
+            		
+			// Heat index formula
+			var Hindex = (c1) + (c2* tempInF) + (c3 * percentHum) + (c4 * tempInF * percentHum) + (c5 * tempInF * tempInF)
+				+ (c6 * percentHum * percentHum) + (c7 * tempInF * tempInF * percentHum) + (c8 * tempInF * percentHum * percentHum) + (c9 * tempInF * tempInF * percentHum * percentHum);
 
 			switch (this.config.units){
-			case "metric": this.feelsLike = Hindex.toFixed(0);
+			case "metric":
+				// Convert temp from deg F to deg C
+                		this.feelsLike = parseFloat((Hindex - 32) / 1.8).toFixed(0);
 				break;
-			case "imperial": this.feelsLike = parseFloat(Hindex * 1.8 + 32).toFixed(0);
+			case "imperial":
+				// Maintain deg F temp
+                		this.feelsLike = Hindex.toFixed(0);
 				break;
 			case "default":
-				var tc = Hindex - 273.15;
-				this.feelsLike = tc.toFixed(0);
+				tempInC = Hindex - 273.15;
+				this.feelsLike = tempInC.toFixed(0);
 				break;
 			}
 		} else {
